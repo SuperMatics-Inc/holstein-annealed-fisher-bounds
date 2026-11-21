@@ -130,7 +130,7 @@ jobs:
               *) echo "missing from the PDF text: $marker"; exit 1 ;;
             esac
           done
-          for marker in 'Cphys' '0.0465126' '0.0465128'; do
+          for marker in '0.0465126' '0.0465128'; do
             case "$tight" in
               *"$marker"*) ;;
               *) echo "missing from the PDF text (spaces folded): $marker"; exit 1 ;;

@@ -1,0 +1,150 @@
+name: replay-and-paper
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Source manifest
+        run: |
+          set -euo pipefail
+          sha256sum -c MANIFEST.sha256
+          (cd replay && sha256sum -c MANIFEST.sha256)
+      - name: Manifest covers every tracked file
+        run: |
+          set -euo pipefail
+          git ls-files | grep -vx 'MANIFEST.sha256' | grep -vx 'replay/MANIFEST.sha256' | sort > tracked.txt
+          sed -E 's/^[0-9a-f]{64}  //' MANIFEST.sha256 | grep -vx 'replay/MANIFEST.sha256' | sort > manifested.txt
+          diff -u manifested.txt tracked.txt
+      - name: No review-cycle file in the tree
+        run: |
+          set -euo pipefail
+          if git ls-files | grep -niE '(^|/)(reviews?|BUILD[^/]*\.md|NOTES[^/]*\.md)|review|cover-letter|\.v[0-9]+\.|\.(aux|log|out|bbl|blg|toc)$'; then exit 1; fi
+      - name: Build the release archive and unpack it
+        run: |
+          set -euo pipefail
+          git archive --format=zip -o "$RUNNER_TEMP/release.zip" HEAD
+          mkdir -p "$RUNNER_TEMP/tree"
+          python -m zipfile -e "$RUNNER_TEMP/release.zip" "$RUNNER_TEMP/tree"
+          unzip -l "$RUNNER_TEMP/release.zip"
+          test "$(find "$RUNNER_TEMP/tree" -type f | wc -l)" -eq "$(git ls-files | wc -l)"
+          (cd "$RUNNER_TEMP/tree" && sha256sum -c MANIFEST.sha256 && (cd replay && sha256sum -c MANIFEST.sha256))
+      - name: Install the replay dependencies
+        run: python -m pip install --disable-pip-version-check mpmath==1.3.0 numpy scipy
+      - name: The replay must exit zero on the archive tree
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/tree/replay"
+          set +e
+          python -B replay.py > "$RUNNER_TEMP/replay.out" 2> "$RUNNER_TEMP/replay.err"
+          rc=$?
+          set -e
+          cat "$RUNNER_TEMP/replay.out" "$RUNNER_TEMP/replay.err"
+          test "$rc" -eq 0 || { echo "replay.py exited $rc, expected 0"; exit 1; }
+          test ! -s "$RUNNER_TEMP/replay.err" || { echo "replay.py wrote to stderr"; exit 1; }
+          test "$(grep -c '^\[CERTIFIED\] ' "$RUNNER_TEMP/replay.out")" -eq 1 || { echo "expected one CERTIFIED line"; exit 1; }
+          test "$(grep -c '^\[NUMERICAL\] ' "$RUNNER_TEMP/replay.out")" -eq 4 || { echo "expected four NUMERICAL lines"; exit 1; }
+          grep -qxF 'ALL VERIFICATION CHECKS PASSED.' "$RUNNER_TEMP/replay.out"
+          grep -qF 'C_vert=0.002423' "$RUNNER_TEMP/replay.out"
+          grep -qF 'C_SE=0.044090' "$RUNNER_TEMP/replay.out"
+          grep -qF 'C1_phys=0.046513' "$RUNNER_TEMP/replay.out"
+          grep -qF '<= 0.125' "$RUNNER_TEMP/replay.out"
+          grep -qF 'U0>0 negative traces=4/120' "$RUNNER_TEMP/replay.out"
+      - name: The mutant run must reject all ten
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/tree/replay"
+          set +e
+          python -B replay.py --mutants > "$RUNNER_TEMP/mutants.out" 2> "$RUNNER_TEMP/mutants.err"
+          rc=$?
+          set -e
+          cat "$RUNNER_TEMP/mutants.out" "$RUNNER_TEMP/mutants.err"
+          test "$rc" -eq 0 || { echo "replay.py --mutants exited $rc, expected 0"; exit 1; }
+          test ! -s "$RUNNER_TEMP/mutants.err" || { echo "replay.py --mutants wrote to stderr"; exit 1; }
+          test "$(grep -c '^\[MUTANT REJECTED\] ' "$RUNNER_TEMP/mutants.out")" -eq 10 || { echo "expected 10 rejected mutants"; exit 1; }
+          grep -qxF 'ALL 10 MUTANTS REJECTED.' "$RUNNER_TEMP/mutants.out"
+      - name: Public prose safeguards
+        run: |
+          set -euo pipefail
+          if grep -nE '—|D:/|C:/|/scratch/|ceiling-20261118|MASSIVE|FISHER-PAPER|reserved DOI|RESERVED' \
+              paper/main.tex paper/refs.bib replay/README.md replay/replay.py README.md CITATION.cff; then exit 1; fi
+          if grep -nF -- '---' paper/main.tex; then exit 1; fi
+          test "$(grep -cF '10.5281/zenodo.24413070' README.md)" -eq 1
+          test "$(grep -cF '10.5281/zenodo.24413072' README.md)" -eq 1
+          if grep -qF '10.5281/zenodo.244130' paper/main.tex; then echo "the released PDF carries no DOI, the TeX must not either"; exit 1; fi
+          flat="$(tr -s '[:space:]' ' ' < README.md)"
+          for phrase in \
+            'intermediate, finite-volume methodological result' \
+            'It is not a pairing ceiling' \
+            'does not close that open step' \
+            'C1_phys = 1/24 + zeta(3)/(8 pi^3) = 0.0465127' \
+            'ALL 10 MUTANTS REJECTED.' \
+            'This preprint has not been peer reviewed.' \
+            "AI agents generated the proofs, code and drafts under D. Rens' direction" \
+            'No superconducting transition is claimed' \
+            '0845717f4f10349b7d592e1d79f5a78a589ea386a987433863c41cd1630c289c'; do
+            case "$flat" in
+              *"$phrase"*) ;;
+              *) echo "missing from README.md: $phrase"; exit 1 ;;
+            esac
+          done
+  paper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poppler
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends poppler-utils
+      - name: The released PDF carries the reviewed bytes and the required text
+        run: |
+          set -euo pipefail
+          test "$(sha256sum paper/main.pdf | cut -d' ' -f1)" = "0845717f4f10349b7d592e1d79f5a78a589ea386a987433863c41cd1630c289c"
+          test "$(sha256sum paper/main.tex | cut -d' ' -f1)" = "d778b1bde0211b0182f103df09890de092102d8e13dd14febff3ed3a67b074aa"
+          test "$(sha256sum paper/refs.bib | cut -d' ' -f1)" = "88135fcefc591a4114c340a5a5a69ab43bbc05313daf91109c9f6e4ffe654981"
+          test "$(sha256sum replay/replay.py | cut -d' ' -f1)" = "572106bc3bd377ab5453e506696557220b5fcf1668c21927d8eb70146b304072"
+          pdfinfo paper/main.pdf > info.txt
+          grep -qE '^Pages:[[:space:]]+13$' info.txt
+          grep -qF 'Davis Rens, SuperMatics Inc., ORCID 0000-0001-5839-5197' info.txt
+          pdftotext paper/main.pdf main.txt
+          if grep -nE '—|D:/|C:/|/scratch/|ceiling-20261118|MASSIVE|FISHER-PAPER|\blane\b|claude|RESERVED' main.txt; then exit 1; fi
+          flat="$(tr -s '[:space:]' ' ' < main.txt)"
+          tight="$(printf '%s' "$flat" | tr -d ' ')"
+          for marker in \
+            'Annealed Fisher bounds, normalized-minor Ward identity, and obstructions to one-contraction pairing ceilings in the Holstein model' \
+            'Davis Rens' 'SuperMatics Inc.' '0000-0001-5839-5197' \
+            'That linear step remains open, and this preprint does not close it' \
+            'This preprint has not been peer reviewed.' \
+            'AI agents generated the proofs, code and drafts under D. Rens' \
+            '572106bc3bd377ab5453e506696557220b5fcf1668c21927d8eb70146b304072'; do
+            case "$flat" in
+              *"$marker"*) ;;
+              *) echo "missing from the PDF text: $marker"; exit 1 ;;
+            esac
+          done
+          for marker in 'Cphys' '0.0465126' '0.0465128'; do
+            case "$tight" in
+              *"$marker"*) ;;
+              *) echo "missing from the PDF text (spaces folded): $marker"; exit 1 ;;
+            esac
+          done
+          sha256sum paper/main.pdf
+          md5sum paper/main.pdf
+      - uses: actions/upload-artifact@v4
+        with:
+          name: holstein-annealed-fisher-bounds-paper
+          path: |
+            paper/main.pdf
+            paper/main.tex
+            paper/refs.bib
+            main.txt
+            info.txt
+          if-no-files-found: error

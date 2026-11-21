@@ -1,0 +1,467 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage[hidelinks,pdfusetitle]{hyperref}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{array}
+\newcommand{\DOI}[1]{\mbox{\href{https://doi.org/#1}{\nolinkurl{#1}}}}
+\newcommand{\doi}[1]{\DOI{#1}}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\DeclareMathOperator{\Tr}{Tr}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Hess}{Hess}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\op}{op}
+\DeclareMathOperator{\HS}{HS}
+\DeclareMathOperator{\cond}{cond}
+\DeclareMathOperator{\dyn}{dyn}
+\DeclareMathOperator{\el}{el}
+\DeclareMathOperator{\ph}{ph}
+\DeclareMathOperator{\phys}{phys}
+\DeclareMathOperator{\vertop}{vert}
+\DeclareMathOperator{\SE}{SE}
+\DeclareMathOperator{\can}{can}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Tpair}{T_{\mathrm{pair}}}
+\newcommand{\kB}{k_{\mathrm{B}}}
+\emergencystretch=1.5em
+\title{Annealed Fisher bounds, normalized-minor Ward identity, and obstructions to one-contraction pairing ceilings in the Holstein model}
+\author{Davis Rens\\SuperMatics Inc.\\\href{https://orcid.org/0000-0001-5839-5197}{ORCID 0000-0001-5839-5197}}
+\date{}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Can the singlet pair-decay temperature $\Tpair$ of the spinful Holstein model on a finite graph be bounded linearly in the phonon frequency $\Omega$ at fixed hopping $t$ and static attraction $U = F^2/K$ as $\Omega \downarrow 0$? That linear step remains open, and this preprint does not close it. Instead, we develop an annealed Fisher-information approach for the zero-Matsubara phonon mode and pinpoint the exact point where the first-order theory succeeds and the second-order closure stops. First, integration by parts on the static-mode marginal and on the exact interacting finite-$\Omega$ conditional marginal (for any Hubbard coupling $U_0 \le 0$) gives the full $V \times V$ matrix Fisher bound $\E[\chi^{\mathrm{eff}}] \preceq U^{-1} I_V$ without any small-hopping cutoff, graph ball-growth hypothesis, or pointwise convexity assumption; in the grand-canonical ensemble at $U_0 = 0$ this controls the expected near-Fermi spectral weight by $2\cosh^2(a/2)\tau/U$, whereas in fixed-particle-number sectors the uniform-shift compressibility vanishes identically while local diagonal entries remain bounded by $U^{-1}$. Second, we prove a Hilbert-Schmidt weighted Fisher inequality and combine it with a Daletskii-Krein spectral Ward identity for the normalized pair-minor matrix $Q_b = (I+e^{-\beta h_b})^{-1}$ to show that $\tau \|\partial_v Q_b\|_{\HS}^2 \le \frac{1}{8} v^T \chi_b v$ uniformly in $b, v, \tau, t, \mu$, eliminating the $\tau^{-1}$ derivative loss present for unnormalized minors. Third, we prove an exact annealed one-contraction bound $\E_0[|\Delta S^{(1)}(b_0)|] \le C_1^{\phys} (\Omega/\tau)^2$ with $C_1^{\phys} = \frac{1}{24} + \frac{\zeta(3)}{8\pi^3} \in [0.0465126, 0.0465128]$ and zero logarithmic factors. Finally, we exhibit three sharp obstructions that block extending this one-contraction bound into a closed global inequality for the interacting structure factor $S_\Omega$: a $\Theta(\tau^{-2})$ second-derivative blowup in clean two-dimensional metals, an extensive $\Theta(V(\Omega/\tau)^2)$ coexistence covariance under static-to-dynamic measure reweighting, and the mismatch between conditional and bare static compressibilities combined with $(t,U)$-blindness of a single bare contraction. We also assess metallic charge-density-wave domain walls near coexistence, showing why they defeat unresummed annealed perturbation without providing a physical counterexample to a linear ceiling.
+\end{abstract}
+
+\section{Introduction and model setup}
+\label{sec:intro}
+
+Establishing a frequency-linear upper bound $\kB \Tpair \le C(t,U)\Omega$ (possibly up to logarithmic factors) for the spinful Holstein model \cite{holstein1959} uniformly in volume and chemical potential $\mu$ as $\Omega \downarrow 0$ remains a central open problem in the rigorous theory of slow-phonon superconductivity. Existing rigorous ceilings either scale as $(U\Omega^2)^{1/3}\log^{1/3}$ in the adiabatic regime \cite{rens2026adiabatic,rens2026imaginary} or as $t^2/U$ uniformly in $\Omega$ at strong coupling \cite{rens2026strong}. Earlier obstruction studies \cite{rens2026barriers1,rens2026barriers2} established that fixed-field static conditioning faces a $\Theta(U\Omega^2/\tau^3)$ first-cumulant resonance on finite paths and tori, and that pathwise determinant positivity alone does not control conditional propagators.
+
+Because the resonance of \cite{rens2026barriers2} occurs at atypical static fields, a natural proposal is to anneal over the zero-Matsubara phonon mode before estimating dynamic phonon contractions, using integration by parts (Fisher information) on the static-mode measure rather than pointwise static bounds. This note carries out that programme completely through first order in the dynamic coupling and establishes precisely where it closes and where it breaks down.
+
+\subsection{Hamiltonian, Matsubara split, and observables}
+
+Let $\Lambda$ be any finite simple graph with $V = |\Lambda|$ vertices (for example the one-dimensional ring $\Z/L\Z$ or the two-dimensional square torus $(\Z/L\Z)^2$). Set $\hbar = \kB = 1$, $\tau = \beta^{-1} > 0$, hopping $t \ge 0$, chemical potential $\mu \in \R$, phonon frequency $\Omega = \sqrt{K/M} > 0$, electron-phonon relaxation energy $U = F^2/K > 0$, and optional on-site Hubbard interaction $U_0 \in \R$. On the fermionic-phononic Hilbert space $\mathcal{F} \otimes \mathcal{H}_{\ph}$, the Holstein-Hubbard Hamiltonian is
+\begin{equation}
+H = H_{\el} + \sum_{x \in \Lambda} \left[\frac{P_x^2}{2M} + \frac{K X_x^2}{2} - F X_x (n_x - 1)\right],
+\label{eq:H}
+\end{equation}
+where $n_{x\sigma} = c_{x\sigma}^\dagger c_{x\sigma}$, $n_x = n_{x\uparrow} + n_{x\downarrow}$, $N = \sum_{x\in\Lambda} n_x$, $[X_x, P_y] = i\delta_{xy}$, and
+\begin{equation}
+H_{\el} = -t \sum_{\langle x,y\rangle, \sigma\in\{\uparrow,\downarrow\}} \left(c_{x\sigma}^\dagger c_{y\sigma} + \mathrm{h.c.}\right) - \mu N + U_0 \sum_{x \in \Lambda} \left(n_{x\uparrow}-\tfrac{1}{2}\right)\left(n_{x\downarrow}-\tfrac{1}{2}\right).
+\label{eq:Hel}
+\end{equation}
+For $U_0 = 0$, the single-spin static Hamiltonian at static field $b = (b_x)_{x\in\Lambda} \in \R^V$ is the $V \times V$ real symmetric matrix
+\begin{equation}
+h_b := -t A_\Lambda - \diag(\mu + b),
+\label{eq:hb}
+\end{equation}
+where $(A_\Lambda)_{xy} = \mathbf{1}_{\{x\sim y\}}$ is the adjacency matrix of $\Lambda$. Decomposing the imaginary-time phonon coordinate as $X_x(u) = \beta^{-1/2} X_{0,x} + \sum_{n \neq 0} \widetilde{X}_{n,x} e^{-i\nu_n u}$ with Matsubara frequencies $\nu_n = 2\pi n \tau$ and defining the energy-dimensioned static field $b_0 := F \beta^{-1/2} X_0 \in \R^V$ and dynamic field $b_{\dyn}(u) := F(X(u) - \beta^{-1/2}X_0)$ ($\int_0^\beta b_{\dyn}(u)\,du = 0$), the free-phonon Euclidean action takes the form
+\begin{equation}
+S_{\ph}[b_0, b_{\dyn}] = \frac{\beta |b_0|^2}{2U} + \sum_{n \ge 1} \frac{\beta (\nu_n^2 + \Omega^2)}{U \Omega^2} |b_n|^2,
+\qquad b_n := \frac{1}{\beta}\int_0^\beta b_{\dyn}(u) e^{i\nu_n u}\,du \in \C^V.
+\label{eq:Sph}
+\end{equation}
+In Matsubara space the nonzero-frequency covariance is $\E_{\dyn}[b_{n,x} b_{-m,y}] = \tau U_n \delta_{nm}\delta_{xy}$ (each complex mode $b_{n,x} = \xi_{n,x} + i\eta_{n,x}$ has two independent real components of variance $\frac{1}{2}\tau U_n$), equivalently
+\begin{equation}
+\E_{\dyn}[b_{\dyn,x}(u) b_{\dyn,y}(0)] = \sum_{n\neq 0} \tau U_n e^{-i\nu_n u}\delta_{xy} = 2\sum_{n \ge 1} \tau U_n \cos(\nu_n u)\delta_{xy}, \qquad U_n := \frac{U\Omega^2}{\nu_n^2 + \Omega^2},
+\label{eq:Un}
+\end{equation}
+consistent with the harmonic-oscillator variance $F^2\langle X(0)^2\rangle = \frac{U\Omega}{2}\coth(\frac{\beta\Omega}{2}) = \tau U + 2\sum_{n\ge 1}\tau U_n$.
+
+Introducing a scaling parameter $s \in [0,1]$ multiplying the dynamic phonon propagator ($U_n \mapsto s U_n$), the static ensemble ($s=0$) has probability density
+\begin{equation}
+p_0(b) = Z_0^{-1} e^{-\Phi_0(b)/\tau}, \qquad \Phi_0(b) := \frac{|b|^2}{2U} - \tau \log Z_{\el,0}(b), \qquad Z_{\el,0}(b) := \Tr_{\mathcal{F}} e^{-\beta H_{\el}(b)},
+\label{eq:p0}
+\end{equation}
+with $H_{\el}(b) := H_{\el} - \sum_{x\in\Lambda} b_x (n_x - 1)$. For $U_0 = 0$, $Z_{\el,0}(b) = e^{-\beta \sum_x b_x} \det(I + e^{-\beta h_b})^2 > 0$.
+
+The singlet pair operator is $\Delta_x := c_{x\downarrow} c_{x\uparrow}$, and the equal-time pair structure factor at dynamic coupling $s \in [0,1]$ is
+\begin{equation}
+S_s := \frac{1}{V} \sum_{x,y \in \Lambda} \langle \Delta_x \Delta_y^\dagger \rangle_s, \qquad S_\Omega := S_{s=1}.
+\label{eq:Ss}
+\end{equation}
+At fixed static field $b$ ($s = 0$, $U_0 = 0$), Wick's theorem gives $\langle \Delta_x \Delta_y^\dagger \rangle_{b,0} = (Q_b)_{xy}^2$, where the normalized pair-minor matrix (particle-hole-reversed Green's matrix) is
+\begin{equation}
+Q_b := (I + e^{-\beta h_b})^{-1} = I - f_\tau(h_b) = q_\tau(h_b), \qquad f_\tau(\varepsilon) := \frac{1}{1+e^{\beta\varepsilon}}, \quad q_\tau(\varepsilon) := 1 - f_\tau(\varepsilon) = \frac{1}{1+e^{-\beta\varepsilon}}.
+\label{eq:Qb}
+\end{equation}
+Since $0 \preceq Q_b \preceq I$, every static field satisfies $S_0(b) = \frac{1}{V}\sum_{x,y}(Q_b)_{xy}^2 = \frac{1}{V}\Tr(Q_b^2) \le 1$, and $\sum_y \langle \Delta_x \Delta_y^\dagger\rangle_{b,0} = (Q_b^2)_{xx} \le 1$. Throughout, $\Tpair$ denotes the model pair-decay temperature defined by exponential decay of $\langle \Delta_x^\dagger \Delta_y \rangle$ uniformly in volume and chemical potential as in \cite{rens2026barriers2}, never a measured transition temperature.
+
+\section{Matrix Fisher bounds for static and finite-frequency modes}
+\label{sec:fisher}
+
+\subsection{Static-mode matrix Fisher identity and near-Fermi spectral bound}
+
+\begin{theorem}[Static-mode matrix Fisher identity]
+\label{thm:S1}
+Let $\Lambda$ be any finite simple graph ($V = |\Lambda|$), $U > 0$, $\tau = \beta^{-1} > 0$, $\mu \in \R$, $t \ge 0$, and $U_0 \in \R$, in either the grand-canonical ensemble on $\mathcal{F}$ or any fixed-particle-number canonical sector $\mathcal{F}_N$ ($0 \le N \le 2V$). Define the conditional electronic density-response matrix
+\begin{equation}
+(\chi_b)_{xy} := \tau \frac{\partial^2 \log Z_{\el,0}(b)}{\partial b_x \partial b_y} = \int_0^\beta \Cov_{b,0}\bigl(n_x(u), n_y(0)\bigr)\,du \succeq 0.
+\label{eq:chib}
+\end{equation}
+Then:
+\begin{enumerate}[label=(\roman*),leftmargin=2.2em]
+\item $\Hess_b \Phi_0(b) = U^{-1} I - \chi_b$, and
+\begin{equation}
+\E_0[\chi_b] = \frac{1}{U} I - \frac{1}{\tau} \E_0\bigl[(\nabla \Phi_0)(\nabla \Phi_0)^T\bigr] \preceq \frac{1}{U} I.
+\label{eq:S1}
+\end{equation}
+\item Omitting $-1$ in $(n_x - 1)$ removes the c-number $+\sum_x b_x$ from $H_{\el}(b)$, subtracting $\sum_x b_x$ from $\Phi_0(b)$ and shifting $\nabla \Phi_0(b)$ by $-\mathbf{1}$; because the shift is linear in $b$, its Hessian is identically zero, so $\chi_b$ and \eqref{eq:S1} are unchanged.
+\end{enumerate}
+\end{theorem}
+
+\begin{corollary}[Uniform-shift spectral bound and ensemble contrast]
+\label{cor:S1a}
+Under the hypotheses of Theorem~\ref{thm:S1}, testing \eqref{eq:S1} on $v = \mathbf{1} = (1,\dots,1)^T$ gives:
+\begin{enumerate}[label=(\roman*),leftmargin=2.2em]
+\item In the grand-canonical ensemble at $U_0 = 0$, $\mathbf{1}^T \chi_b \mathbf{1} = 2\beta \Tr[f_\tau(h_b)q_\tau(h_b)] = 2\Tr[-f_\tau'(h_b)]$, so
+\begin{equation}
+2 \E_0 \Tr[-f_\tau'(h_b)] \le \frac{V}{U},
+\label{eq:S1a_trace}
+\end{equation}
+and for every $a > 0$, since $-f_\tau'(\varepsilon) = \frac{1}{4\tau \cosh^2(\varepsilon/(2\tau))} \ge \frac{1}{4\tau \cosh^2(a/2)}\mathbf{1}_{\{|\varepsilon| \le a\tau\}}$,
+\begin{equation}
+\frac{1}{V} \E_0 \Tr\mathbf{1}_{\{|h_b| \le a\tau\}} \le 2\cosh^2(a/2)\,\frac{\tau}{U}.
+\label{eq:S1a_proj}
+\end{equation}
+\item In a fixed-$N$ canonical sector, $\sum_{x\in\Lambda}(n_x - 1) = N - V$ is a c-number, so $\mathbf{1}^T \chi_b^{\can} \mathbf{1} \equiv 0$ identically: \eqref{eq:S1} holds trivially along $v = \mathbf{1}$ ($0 \le V/U$) and yields no near-Fermi projector bound \eqref{eq:S1a_proj}. However, orthogonal and single-site directions ($v \perp \mathbf{1}$ or $v = e_z$) remain nontrivial and satisfy $\E_0[(\chi_b^{\can})_{zz}] \le U^{-1}$.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}[Proof of Theorem~\ref{thm:S1} and Corollary~\ref{cor:S1a}]
+On the finite-dimensional Hilbert space $\mathcal{F}$ (or $\mathcal{F}_N$), $\dim \mathcal{F} = 4^V < \infty$, $Z_{\el,0}(b) > 0$ is $C^\infty$ in $b \in \R^V$, and $0 \le n_x \le 2$ gives $\|n_x - 1\|_{\op} = 1$. Hence for every $b \in \R^V$,
+\[
+|\langle n_x - 1 \rangle_{b,0}| \le 1, \qquad Z_{\el,0}(b) \le 4^V e^{\beta(\|H_{\el}\|_{\op} + |b|_1)}, \qquad 0 \preceq \chi_b \preceq \beta V I,
+\]
+where the upper bound on $\chi_b$ follows from Bogoliubov-Duhamel convexity, $v^T \chi_b v \le \beta \Var_{b,0}(v\cdot(n-1)) \le \beta \|v\cdot(n-1)\|_{\op}^2 \le \beta |v|_1^2 \le \beta V |v|^2$ (for $U_0 = 0$, free-fermion perturbation gives $\chi_b \preceq \frac{\beta}{2} I$). Consequently,
+\[
+\Phi_0(b) \ge \frac{|b|^2}{2U} - |b|_1 - \tau\bigl(\log 4^V + \beta \|H_{\el}\|_{\op}\bigr), \qquad |\nabla \Phi_0(b)| \le \frac{|b|}{U} + \sqrt{V}.
+\]
+Thus $p_0(b)$ and $(\nabla \Phi_0(b)) p_0(b)$ decay as $O(|b|\exp(-|b|^2/(2U\tau) + |b|_1/\tau))$ as $|b| \to \infty$. Applying the divergence theorem on $\{|b| \le R\}$ and taking $R \to \infty$, the boundary surface integrals vanish super-exponentially, yielding
+\[
+0 = \int_{\R^V} \nabla \cdot \bigl((\nabla \Phi_0(b))^T p_0(b)\bigr)\,db = \E_0\bigl[\Hess\Phi_0(b)\bigr] - \frac{1}{\tau}\E_0\bigl[(\nabla\Phi_0(b))(\nabla\Phi_0(b))^T\bigr].
+\]
+Since $\nabla \Phi_0(b)_x = \frac{b_x}{U} - \langle n_x - 1\rangle_{b,0}$, differentiating again gives $\Hess\Phi_0(b) = U^{-1} I - \chi_b$, proving \eqref{eq:S1}. Shifting $b \mapsto b + \lambda\mathbf{1}$ multiplies $Z_{\el,0}(b)$ by $e^{\beta \lambda (N-V)}$ inside the trace because $[N, H_{\el}(b)] = 0$, so $\mathbf{1}^T \chi_b \mathbf{1} = \beta \Var_{b,0}(N)$. In the grand-canonical $U_0=0$ ensemble, $\Var_{b,0}(N)$ equals $2\sum_{a=1}^V f_\tau(\varepsilon_a(b)) q_\tau(\varepsilon_a(b)) = 2\tau\Tr[-f_\tau'(h_b)]$, giving \eqref{eq:S1a_trace} and \eqref{eq:S1a_proj}; in fixed-$N$ sectors, $\Var_{b,0}(N) \equiv 0$.
+\end{proof}
+
+\subsection{True finite-frequency conditional matrix Fisher bound}
+
+We now lift Theorem~\ref{thm:S1} to the true zero-Matsubara marginal of the interacting quantum Holstein-Hubbard model at arbitrary $\Omega > 0$.
+
+\begin{theorem}[True finite-$\Omega$ conditional matrix Fisher bound]
+\label{thm:S2}
+Consider the full quantum Holstein-Hubbard model \eqref{eq:H} and \eqref{eq:Hel} at any finite graph $\Lambda$, $\Omega > 0$, $\tau = \beta^{-1} > 0$, $t \ge 0$, $U > 0$, $\mu \in \R$, with $U_0 \le 0$ (pure Holstein $U_0 = 0$ or attractive Hubbard $U_0 < 0$). Write the partition function as
+\begin{equation}
+Z_\Omega = \left(\frac{\beta}{2\pi U}\right)^{V/2} \int_{\R^V} e^{-\beta |b_0|^2/(2U)} Z_{\cond}(b_0)\,db_0,
+\label{eq:ZOmega_split}
+\end{equation}
+where $Z_{\cond}(b_0) := \lim_{M\to\infty} Z_{\cond}^{(M)}(b_0)$ is the conditional partition function of electrons plus all nonzero-frequency phonon modes $b_{\dyn}(u)$ at fixed static mode $b_0$, normalized so $Z_{\cond}(b_0)\big|_{\Omega\to 0^+} = Z_{\el,0}(b_0)$. Then:
+\begin{enumerate}[label=(\roman*),leftmargin=2.2em]
+\item For every $b_0 \in \R^V$, $Z_{\cond}(b_0) > 0$ strictly, and $p_{\dyn}(b_0) := Z_{\dyn}^{-1} e^{-\Phi_{\dyn}(b_0)/\tau}$ with $\Phi_{\dyn}(b_0) := \frac{|b_0|^2}{2U} - \tau \log Z_{\cond}(b_0)$ is a smooth strictly positive probability density on $\R^V$.
+\item Defining the conditional imaginary-time density-response matrix
+\begin{equation}
+(\chi_{b_0}^{\cond})_{xy} := \tau \frac{\partial^2 \log Z_{\cond}(b_0)}{\partial b_{0,x}\partial b_{0,y}} = \int_0^\beta \Cov_{b_0}^{\cond}\bigl(n_x(u), n_y(0)\bigr)\,du,
+\label{eq:chicond}
+\end{equation}
+we have $\Hess_{b_0}\Phi_{\dyn}(b_0) = U^{-1} I - \chi_{b_0}^{\cond}$ and the $V \times V$ matrix identity
+\begin{equation}
+\E_{\dyn}\bigl[\chi_{b_0}^{\cond}\bigr] = \frac{1}{U} I - \frac{1}{\tau} \E_{\dyn}\bigl[(\nabla \Phi_{\dyn})(\nabla\Phi_{\dyn})^T\bigr] \preceq \frac{1}{U} I.
+\label{eq:S2}
+\end{equation}
+\item In the grand-canonical ensemble, testing \eqref{eq:S2} on $v = \mathbf{1}$ bounds the expected conditional compressibility by
+\begin{equation}
+\E_{\dyn}\bigl[\kappa_{\cond}(b_0)\bigr] := \frac{1}{V} \E_{\dyn}\!\left[\frac{\partial \langle N \rangle_{b_0}^{\cond}}{\partial \mu}\right] = \frac{1}{V} \E_{\dyn}\bigl[\beta \Var_{b_0}^{\cond}(N)\bigr] \le \frac{1}{U}.
+\label{eq:S2_comp}
+\end{equation}
+In fixed-$N$ sectors, $\mathbf{1}^T \chi_{b_0}^{\cond} \mathbf{1} \equiv 0$, while single-site directions $v = e_z$ still yield $\E_{\dyn}[(\chi_{b_0}^{\cond})_{zz}] \le U^{-1}$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(i) For $U_0 \le 0$, the exact spin-occupation identity $2(n_{x\uparrow}-\frac{1}{2})(n_{x\downarrow}-\frac{1}{2}) = (n_x - 1)^2 - \frac{1}{2}$ (valid on $n_{x\sigma}\in\{0,1\}$) rewrites $U_0(n_{x\uparrow}-\frac{1}{2})(n_{x\downarrow}-\frac{1}{2}) = -\frac{|U_0|}{2}(n_x - 1)^2 + \frac{|U_0|}{4}$. Decoupling $-\frac{|U_0|}{2}(n_x - 1)^2$ via a real Hubbard-Stratonovich field $\eta_x(u)$ at $M$ Trotter slices $\Delta\tau = \beta/M$ with total real site field $w_m = b_0 + b_{\dyn,m} + \eta_m \in \R^V$ makes the spin-$\uparrow$ and spin-$\downarrow$ single-spin matrices equal to the identical real symmetric matrix $h_{w_m}$ of \eqref{eq:hb}. The electronic trace therefore factors as a square:
+\[
+\Tr_{\mathcal{F}} \prod_{m=1}^M e^{-\Delta\tau H_{\el}(w_m)} = e^{-\Delta\tau \sum_{m,x} w_{m,x} - \beta V |U_0|/4} \left[\det\!\left(I + \prod_{m=1}^M e^{-\Delta\tau h_{w_m}}\right)\right]^2 \ge 0.
+\]
+At the zero path $b_{\dyn} \equiv 0, \eta \equiv 0$, $e^{-\beta h_{b_0}} \succ 0$ so the determinant is at least $1 > 0$. By continuity and strictly positive Gaussian weights on $(b_{\dyn}, \eta)$, $Z_{\cond}^{(M)}(b_0) > 0$ for every $M$ and $b_0 \in \R^V$. Passing $M \to \infty$ (Trotter-Kato convergence on the finite-dimensional electronic space coupled to massive harmonic modes with $\Omega > 0$) preserves $Z_{\cond}(b_0) > 0$ by Jensen/Peierls-Bogoliubov lower bounds around the free harmonic ground state.
+
+(ii) Note carefully that on general graphs in $d \ge 2$, individual auxiliary-field paths need not preserve pointwise positive definiteness of $\chi_{b_0}^{\cond}$ (whereas worldline positivity gives $\chi_{b_0}^{\cond} \succeq 0$ pointwise on 1D chains and trees). Importantly, \eqref{eq:S2} does not require $\chi_{b_0}^{\cond} \succeq 0$ pointwise. Rather than estimating pathwise second derivatives, we bound $Z_{\cond}(b_0)$ and $\nabla Z_{\cond}(b_0)$ directly via trace-norm estimates on $\mathcal{F}$ ($\dim \mathcal{F} = 4^V$), keeping the bounded Hubbard operator inside $H_{\el}$. At $M$ Trotter slices $\Delta\tau = \beta/M$ with $w_m = b_0 + b_{\dyn,m}$, Duhamel expansion and $\|A_1\cdots A_M\|_1 \le 4^V \prod_{j=1}^M \|A_j\|_{\op}$ yield
+\[
+\left\|\partial_{b_{0,x}} \prod_{m=1}^M e^{-\Delta\tau H_{\el}(w_m)}\right\|_1 \le \beta \cdot 4^V \exp\!\left(\beta\|H_{\el}\|_{\op} + \beta |b_0|_1 + \frac{\beta}{M}\sum_{m=1}^M |b_{\dyn,m}|_1\right),
+\]
+since $\|n_x - 1\|_{\op} = 1$. Because the Gaussian integral of $\exp(\int_0^\beta |b_{\dyn}(u)|_1\,du)$ over the massive modes ($\nu_n^2 + \Omega^2 \ge 4\pi^2\tau^2 + \Omega^2 > 0$) is finite and independent of $b_0$, passing $M \to \infty$ produces a constant $C = C(V, \beta, \Omega, t, \mu, U, U_0) < \infty$ independent of $b_0$ such that
+\[
+0 < Z_{\cond}(b_0) \le C\, e^{\beta |b_0|_1}, \qquad |\nabla_{b_0} Z_{\cond}(b_0)| \le \beta \sqrt{V}\, C\, e^{\beta |b_0|_1}.
+\]
+Consequently,
+\begin{align*}
+\bigl|(\nabla \Phi_{\dyn}(b_0))\, p_{\dyn}(b_0)\bigr|
+&= Z_{\dyn}^{-1} \left|\frac{b_0}{U} Z_{\cond}(b_0) - \tau \nabla Z_{\cond}(b_0)\right| e^{-\beta |b_0|^2/(2U)} \\
+&\le Z_{\dyn}^{-1}\left(\frac{|b_0|}{U} + \sqrt{V}\right) C\, e^{-\beta |b_0|^2/(2U) + \beta |b_0|_1},
+\end{align*}
+which decays super-exponentially as $|b_0| \to \infty$. Applying the divergence theorem on $\{|b_0| \le R\}$ and taking $R \to \infty$ eliminates all boundary terms and proves \eqref{eq:S2}.
+
+(iii) Shifting $b_0 \mapsto b_0 + \lambda \mathbf{1}$ shifts $\mu \mapsto \mu + \lambda$ inside $H_{\el}$, so $\mathbf{1}^T \chi_{b_0}^{\cond} \mathbf{1} = \partial_\mu \langle N \rangle_{b_0}^{\cond} = \beta \Var_{b_0}^{\cond}(N)$, giving \eqref{eq:S2_comp}.
+\end{proof}
+
+\begin{remark}[Repulsive Hubbard sign failure and comparison with prior literature]
+\label{rem:S2_compare}
+For $U_0 > 0$, the identity $U_0(n_{x\uparrow}-\frac{1}{2})(n_{x\downarrow}-\frac{1}{2}) = +\frac{U_0}{2}(n_x-1)^2 - \frac{U_0}{4}$ has the opposite sign, so decoupling introduces an imaginary scalar field or couples to $(n_{x\uparrow} - n_{x\downarrow})$ and breaks $h_\uparrow = h_\downarrow$ spin-square factorization. On non-bipartite graphs or with spin imbalance, individual real-path traces become negative (checked numerically in the supplement on a 3-site triangle at $U_0 = 10$, $N_\uparrow = 2, N_\downarrow = 1$, where $4/120$ sampled paths have negative trace), so unconditional positivity via spin-square factorization fails for $U_0 > 0$ outside bipartite half filling.
+
+Notice the exact structural difference between Theorems~\ref{thm:S1} and~\ref{thm:S2} and existing rigorous Holstein bounds. Miyao's susceptibility theorem \cite{miyao2017} extends Gaussian domination under repulsive positivity assumptions to bound the charge susceptibility by $O(1/U_{\mathrm{eff}})$ (an $\Omega$-independent upper bound on charge fluctuations, not on pair order or $O(\Omega)$), while his Pirogov-Sinai stability theorem \cite{miyao2024} requires a lower frequency bound $\Omega \ge \Omega_*$ that excludes $\Omega \downarrow 0$. Conversely, perturbative static-resonance estimates at small hopping $t/U \ll 1$ and $\Omega \le \tau \le U/16$ collapse into the strong-coupling $t^2/U$ regime \cite{rens2026strong}. By contrast, Theorems~\ref{thm:S1} and~\ref{thm:S2} are non-perturbative in $t/U$, independent of graph dimension and ball growth, valid for all $\tau, \Omega > 0$, and hold directly under the interacting marginal $p_{\dyn}(b_0)$. What Theorem~\ref{thm:S2} does not provide is a direct bound on the bare static density of states $\Tr[-f_\tau'(h_{b_0})]$ under $p_{\dyn}$ (since $\chi_{b_0}^{\cond}$ is the dressed conditional compressibility, not $\chi_{b_0}$) or on off-diagonal pair correlations $S_\Omega$.
+\end{remark}
+
+\section{Weighted Fisher inequality and first-order Ward control of pair minors}
+\label{sec:ward}
+
+\begin{theorem}[Weighted Fisher inequality]
+\label{thm:W1}
+Let $p(b) = Z^{-1} e^{-\Phi(b)/\tau}$ be either the static marginal $p_0(b)$ (with $\chi_b^{\mathrm{eff}} = \chi_b$, $\Phi = \Phi_0$) or the finite-$\Omega$ conditional marginal $p_{\dyn}(b_0)$ (with $\chi_b^{\mathrm{eff}} = \chi_{b_0}^{\cond}$, $\Phi = \Phi_{\dyn}$, $U_0 \le 0$). For every direction $v \in \R^V$ and every $C^1$ matrix-valued (or scalar) observable $F: \R^V \to \C^{r \times s}$ of polynomial growth with polynomially bounded $v\cdot\nabla F$,
+\begin{equation}
+\E\bigl[\|F\|_{\HS}^2\, v^T \chi_b^{\mathrm{eff}} v\bigr]
+\le \frac{|v|^2}{U}\E\bigl[\|F\|_{\HS}^2\bigr] + \tau\,\E\bigl[\|v\cdot\nabla F\|_{\HS}^2\bigr],
+\label{eq:W1}
+\end{equation}
+with exact equality when the nonnegative defect $\frac{1}{\tau}\E[\|F(v\cdot\nabla\Phi) - \tau(v\cdot\nabla F)\|_{\HS}^2]$ is retained on the left-hand side for real scalar or real matrix-valued $F$.
+\end{theorem}
+
+\begin{proof}
+For a real-valued $C^1$ scalar function $f: \R^V \to \R$ of polynomial growth with polynomially bounded $\nabla f$, super-exponential decay of $p(b)$ and $\nabla\Phi(b) p(b)$ permits integrating $\nabla \cdot (f(b)^2 (\nabla\Phi(b)) p(b))$ along $v$ by parts:
+\[
+0 = \int_{\R^V} v\cdot\nabla\bigl(f^2 (v\cdot\nabla\Phi)\,p\bigr)\,db
+= \E\bigl[f^2\, v^T(\Hess\Phi)v\bigr] + \E\bigl[2f (v\cdot\nabla f)(v\cdot\nabla\Phi)\bigr] - \frac{1}{\tau}\E\bigl[f^2 (v\cdot\nabla\Phi)^2\bigr].
+\]
+Substituting $\Hess\Phi = U^{-1} I - \chi_b^{\mathrm{eff}}$ and completing the square in the cross-term,
+\[
+2f(v\cdot\nabla f)(v\cdot\nabla\Phi) - \frac{1}{\tau} f^2 (v\cdot\nabla\Phi)^2
+= \tau (v\cdot\nabla f)^2 - \frac{1}{\tau}\bigl(f(v\cdot\nabla\Phi) - \tau(v\cdot\nabla f)\bigr)^2 \le \tau (v\cdot\nabla f)^2.
+\]
+Applying this to the real and imaginary parts of each entry $F_{ij}(b)$ and summing over $(i,j)$ yields \eqref{eq:W1}.
+\end{proof}
+
+A central question for the weighted Fisher route is whether differentiating a pair-carrying minor $F$ introduces an uncontrolled $\tau^{-1}$ penalty in the gradient term $\tau \E[\|v\cdot\nabla F\|_{\HS}^2]$. The next theorem proves that for normalized pair minors $Q_b$, no $\tau^{-1}$ loss occurs at first order.
+
+\begin{theorem}[First-order Ward identity for normalized pair minors]
+\label{thm:W2}
+Take $U_0 = 0$ and let $Q_b = q_\tau(h_b) = (I + e^{-\beta h_b})^{-1}$ be the normalized pair-minor matrix \eqref{eq:Qb}. For every $b \in \R^V$, every direction $v \in \R^V$, and every $\tau > 0$:
+\begin{equation}
+\tau \sum_{x,y \in \Lambda} \bigl|\partial_v (Q_b)_{xy}\bigr|^2 = \tau \|\partial_v Q_b\|_{\HS}^2 \le \frac{1}{8}\, v^T \chi_b v.
+\label{eq:W2_pointwise}
+\end{equation}
+Consequently, averaging under $p_0$ and applying Theorem~\ref{thm:S1} and Theorem~\ref{thm:W1} entrywise to $F_{xy}(b) = (Q_b)_{xy}$:
+\begin{equation}
+\tau \E_0 \sum_{x,y \in \Lambda} \bigl|\partial_v (Q_b)_{xy}\bigr|^2 \le \frac{|v|^2}{8U},
+\label{eq:W2_grad}
+\end{equation}
+\begin{equation}
+\E_0\bigl[S_0(b)\, v^T \chi_b v\bigr] = \frac{1}{V} \sum_{x,y \in \Lambda} \E_0\bigl[(Q_b)_{xy}^2\, v^T \chi_b v\bigr] \le \frac{|v|^2}{U}\E_0[S_0(b)] + \frac{|v|^2}{8 U V}.
+\label{eq:W2_weighted}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Since $h_b = -tA_\Lambda - \diag(\mu + b)$, $\partial_v h_b = -\diag(v)$. Let $\{(\varepsilon_a, |\psi_a\rangle)\}_{a=1}^V$ be an orthonormal eigenbasis of $h_b$, and set $v_{ac} := \langle \psi_a | \diag(v) | \psi_c \rangle$. By the Daletskii-Krein spectral divided-difference formula \cite{daletskii1965} for $Q_b = q_\tau(h_b)$,
+\[
+(\partial_v Q_b)_{ac} = (-v_{ac}) \frac{q_\tau(\varepsilon_a) - q_\tau(\varepsilon_c)}{\varepsilon_a - \varepsilon_c} = -v_{ac}\, K(\varepsilon_a, \varepsilon_c),
+\]
+where $K(\varepsilon_a, \varepsilon_c) := \frac{f_\tau(\varepsilon_c) - f_\tau(\varepsilon_a)}{\varepsilon_a - \varepsilon_c} > 0$ (extended continuously to $K(\varepsilon, \varepsilon) = -f_\tau'(\varepsilon) = \beta f_\tau(\varepsilon) q_\tau(\varepsilon)$). Meanwhile, standard second-order static perturbation gives
+\begin{equation}
+v^T \chi_b v = 2 \sum_{a,c=1}^V |v_{ac}|^2\, K(\varepsilon_a, \varepsilon_c).
+\label{eq:chi_spectral}
+\end{equation}
+Writing $K(\varepsilon_a, \varepsilon_c) = \beta K_1(\beta\varepsilon_a, \beta\varepsilon_c)$ with $K_1(x,y) := \frac{f_1(y) - f_1(x)}{x - y}$ and $f_1(x) = (1+e^x)^{-1}$, the Mean Value Theorem gives $0 < K_1(x,y) = -f_1'(\xi) = f_1(\xi)(1-f_1(\xi)) \le \frac{1}{4}$ for some $\xi$ between $x$ and $y$. Therefore, pointwise for all $(\varepsilon_a, \varepsilon_c) \in \R^2$,
+\[
+\tau K(\varepsilon_a, \varepsilon_c)^2 = K(\varepsilon_a, \varepsilon_c)\, K_1(\beta\varepsilon_a, \beta\varepsilon_c) \le \frac{1}{4}\, K(\varepsilon_a, \varepsilon_c).
+\]
+Multiplying by $|v_{ac}|^2$ and summing over $a, c$ using unitary invariance of the Hilbert-Schmidt norm yields
+\[
+\tau \|\partial_v Q_b\|_{\HS}^2 = \sum_{a,c=1}^V |v_{ac}|^2\, \tau K(\varepsilon_a, \varepsilon_c)^2 \le \frac{1}{4}\sum_{a,c=1}^V |v_{ac}|^2 K(\varepsilon_a, \varepsilon_c) = \frac{1}{8}\, v^T \chi_b v,
+\]
+proving \eqref{eq:W2_pointwise}. Taking expectations under $p_0$ and applying \eqref{eq:S1} gives \eqref{eq:W2_grad}, and summing Theorem~\ref{thm:W1} \eqref{eq:W1} over $F = (Q_b)_{xy}$ divided by $V$ yields \eqref{eq:W2_weighted}.
+\end{proof}
+
+\begin{remark}[Contrast with unnormalized determinant minors]
+\label{rem:unnorm}
+The cancellation in Theorem~\ref{thm:W2} depends crucially on normalization by $Z_{\el,0}(b)$. An unnormalized minor $\widetilde{M}_{xy}(b) := Z_{\el,0}(b)^{1/2} (Q_b)_{xy}$ acquires the partition-function gradient $\partial_v \log Z_{\el,0}^{1/2} = \frac{\beta}{2} \langle v\cdot(n - 1)\rangle_{b,0}$, so $\tau |\partial_v \widetilde{M}_{xy}|^2 \sim \frac{1}{4\tau} |\langle v\cdot(n-1)\rangle_{b,0}|^2 |\widetilde{M}_{xy}|^2$ genuinely diverges as $\Theta(\tau^{-1})$ whenever $\langle n_z - 1\rangle_{b,0} \neq 0$ (verified numerically in the supplement on a 4-site ring at $\mu = 1$).
+\end{remark}
+
+\section{The one-contraction estimate and three obstructions to closure}
+\label{sec:onecontraction}
+
+\subsection{Exact annealed one-contraction bound}
+
+\begin{theorem}[Exact static-measure one-contraction bound]
+\label{thm:C1}
+Take $U_0 = 0$ and let $S_s(b_0) := \frac{1}{V}\sum_{x,y\in\Lambda} \langle \Delta_x \Delta_y^\dagger \rangle_{b_0, s}$ be the conditional equal-time pair structure factor at dynamic coupling $s \in [0,1]$, with exact first-order dynamic correction at fixed static field $b_0$:
+\[
+\Delta S^{(1)}(b_0) := \left.\frac{\partial S_s(b_0)}{\partial s}\right|_{s=0} = \Delta S^{(1)}_{\vertop}(b_0) + \Delta S^{(1)}_{\SE}(b_0).
+\]
+Then:
+\begin{enumerate}[label=(\roman*),leftmargin=2.2em]
+\item In an orthonormal eigenbasis $\{(\varepsilon_a, |\psi_a\rangle)\}$ of $h_{b_0}$ with $W_{ac} := \sum_{z\in\Lambda} |\psi_a(z)|^2 |\psi_c(z)|^2 \ge 0$, $f_a := f_\tau(\varepsilon_a)$, $q_a := 1 - f_a$, $d_{ca} := \varepsilon_c - \varepsilon_a$, $\nu_n = 2\pi n\tau$, and $U_n = \frac{U\Omega^2}{\nu_n^2 + \Omega^2}$:
+\begin{equation}
+\Delta S^{(1)}_{\vertop}(b_0) = \frac{2\tau}{V} \sum_{n \ge 1} U_n \sum_{a,c=1}^V W_{ac}\, \frac{(f_a - f_c)^2}{(\varepsilon_a - \varepsilon_c)^2 + \nu_n^2} \ge 0,
+\label{eq:C1_vert}
+\end{equation}
+\begin{equation}
+\Delta S^{(1)}_{\SE}(b_0) = \frac{4\tau}{V} \sum_{n \ge 1} U_n \sum_{a,c=1}^V W_{ac}\, q_a \left[\frac{(f_a - f_c)(d_{ca}^2 - \nu_n^2)}{(d_{ca}^2 + \nu_n^2)^2} - \frac{\beta f_a q_a\, d_{ca}}{d_{ca}^2 + \nu_n^2}\right].
+\label{eq:C1_SE}
+\end{equation}
+\item For every $b_0 \in \R^V$, $\Lambda$, $t, U, \Omega, \tau > 0$, and $\mu \in \R$,
+\begin{align}
+\bigl|\Delta S^{(1)}_{\vertop}(b_0)\bigr| &\le \frac{\zeta(3)}{16\pi^3} \frac{U\Omega^2}{\tau^2}\left(\frac{1}{V}\sum_{z\in\Lambda} (\chi_{b_0})_{zz}\right), \nonumber\\
+\bigl|\Delta S^{(1)}_{\SE}(b_0)\bigr| &\le \left(\frac{1}{24} + \frac{\zeta(3)}{16\pi^3}\right) \frac{U\Omega^2}{\tau^2}\left(\frac{1}{V}\sum_{z\in\Lambda} (\chi_{b_0})_{zz}\right),
+\label{eq:C1_pointwise_parts}
+\end{align}
+and hence
+\begin{equation}
+\bigl|\Delta S^{(1)}(b_0)\bigr| \le C_1^{\phys}\, \frac{U\Omega^2}{\tau^2}\left(\frac{1}{V}\sum_{z\in\Lambda} (\chi_{b_0})_{zz}\right), \qquad C_1^{\phys} := \frac{1}{24} + \frac{\zeta(3)}{8\pi^3} \approx 0.0465127.
+\label{eq:C1_pointwise}
+\end{equation}
+\item Annealing under $p_0(b_0)$ via Theorem~\ref{thm:S1} cancels $U$ identically with no logarithmic factors:
+\begin{equation}
+\E_0\bigl[\bigl|\Delta S^{(1)}(b_0)\bigr|\bigr] \le C_1^{\phys} \left(\frac{\Omega}{\tau}\right)^2.
+\label{eq:C1_annealed}
+\end{equation}
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(i) Expand $\langle \Delta_x \Delta_y^\dagger \rangle_{b_0, s} = \frac{\langle \Delta_x \Delta_y^\dagger \, e^{-S_{\mathrm{int}}(s)} \rangle_{b_0,0}}{\langle e^{-S_{\mathrm{int}}(s)}\rangle_{b_0,0}}$ to first order in $s$, where a single dynamic contraction $-\frac{1}{2}\int_0^\beta du_1 \int_0^\beta du_2 \sum_z D(u_1-u_2)(n_z(u_1)-1)(n_z(u_2)-1)$ with physical covariance \eqref{eq:Un}, $D(u) = -\sum_{n\neq 0}\tau U_n e^{-i\nu_n u}$, contracts two density vertices with $\Delta_x(0)\Delta_y^\dagger(0)$. Disconnected bubble and Hartree tadpole terms cancel against the denominator. In the real orthonormal eigenbasis $\{(\varepsilon_a, |\psi_a\rangle)\}$ of $h_{b_0}$, the free imaginary-time Green's function is $\mathcal{G}_0(u) = \sum_a |\psi_a\rangle\langle\psi_a| e^{-\varepsilon_a u} [\mathbf{1}_{u>0} q_a - \mathbf{1}_{u \le 0} f_a]$:
+\begin{itemize}[leftmargin=1.8em]
+\item The vertex contraction (one density vertex on spin-$\uparrow$ and one on spin-$\downarrow$, with two identical assignments canceling the $\frac{1}{2}$) sums over $x,y \in \Lambda$ by completeness, yielding
+\begin{align*}
+\Delta S^{(1)}_{\vertop}(b_0) &= \frac{1}{V} \sum_{z\in\Lambda} \sum_{x,y\in\Lambda} \sum_{n\neq 0} \tau U_n \left|\int_0^\beta e^{i\nu_n u} \mathcal{G}_0(0^-, u)_{xz} \mathcal{G}_0(u, 0)_{zy}\,du\right|^2 \\
+&= \frac{2\tau}{V} \sum_{n\ge 1} U_n \sum_{a,c=1}^V W_{ac}\, |\mathcal{I}_{ac}(\nu_n)|^2,
+\end{align*}
+where $\mathcal{I}_{ac}(\nu_n) = \int_0^\beta e^{i\nu_n u} (-f_a e^{\varepsilon_a u}) (q_c e^{-\varepsilon_c u})\,du = \frac{f_a - f_c}{\varepsilon_a - \varepsilon_c + i\nu_n}$ (using $f_a e^{\beta\varepsilon_a} = q_a$), giving \eqref{eq:C1_vert}.
+\item The two-leg self-energy contraction (both vertices on the same spin line $\sigma \in \{\uparrow, \downarrow\}$, factor of $2$ for spin times $2\sum_{n\ge 1}$, with the opposite spin line carrying $(Q_{b_0})_{yx}$) sums over $x,y$ via $\sum_{x,y} (Q_{b_0})_{yx} \psi_a(x) \psi_b(y) = q_a \delta_{ab}$, yielding $W_{ac}$ multiplied by the fermion Matsubara sum $\tau \sum_{k\in\Z} \frac{1}{(i\omega_k - \varepsilon_a)^2 (i\omega_k + i\nu_n - \varepsilon_c)}$. Contour integration (double pole at $i\omega_k = \varepsilon_a$ and simple pole at $i\omega_k = \varepsilon_c - i\nu_n$, using $e^{i\nu_n\beta}=1$) gives $-\frac{f_c - f_a}{(d_{ca}-i\nu_n)^2} - \frac{\beta f_a q_a}{d_{ca} - i\nu_n}$; summing $\pm n$ yields \eqref{eq:C1_SE}.
+\end{itemize}
+
+(ii) By \eqref{eq:chi_spectral} summed over $v = e_z$, $\frac{1}{V}\sum_{z\in\Lambda} (\chi_{b_0})_{zz} = \frac{2\beta}{V} \sum_{a,c} W_{ac} K_1(x_a, x_c)$ where $x_a = \beta\varepsilon_a$, $d = x_c - x_a$, $w_n = 2\pi n$, and $K_1(x_a, x_c) = \frac{f_a - f_c}{d} > 0$. Using $U_n \le \frac{U\Omega^2}{\nu_n^2} = \frac{U\Omega^2}{\tau^2 w_n^2}$:
+\begin{itemize}[leftmargin=1.8em]
+\item For the vertex term, $\frac{\tau (f_a - f_c)^2}{(\varepsilon_a - \varepsilon_c)^2 + \nu_n^2} = \beta K_1(x_a, x_c) \frac{|d|\,|f_a - f_c|}{d^2 + w_n^2} \le \beta K_1(x_a, x_c) \frac{1}{2w_n}$ because $|f_a - f_c| \le 1$ and $\frac{|d|}{d^2 + w_n^2} \le \frac{1}{2w_n}$. Multiplying by $2$, dividing by $2$ from $\sum_z \chi_{zz} = \frac{2\beta}{V}\sum W_{ac} K_1$, and summing $\sum_{n\ge 1} \frac{1}{2w_n^3} = \frac{\zeta(3)}{16\pi^3}$ proves the first bound in \eqref{eq:C1_pointwise_parts}.
+\item For the self-energy term, rescaling $d_{ca} = \tau d$, $\nu_n = \tau w_n$ and symmetrizing $a \leftrightarrow c$ in $W_{ac} = W_{ca}$ turns $q_a [\cdots]$ into
+\[
+\frac{\beta^2}{2}\left[-\frac{(f_a - f_c)^2 (d^2 - w_n^2)}{(d^2 + w_n^2)^2} + \frac{d\,(g(x_c) - g(x_a))}{d^2 + w_n^2}\right], \qquad g(x) := f_1(x)(1 - f_1(x))^2.
+\]
+Direct differentiation gives $\frac{g'(x)}{f_1'(x)} = \frac{-f_1 q_1^3 + 2 f_1^2 q_1^2}{-f_1 q_1} = (1 - f_1)(1 - 3f_1) \in [-1, 1]$ for all $f_1 \in [0, 1]$. By Cauchy's Mean Value Theorem, $|g(x_c) - g(x_a)| \le |f_1(x_c) - f_1(x_a)| = |d| K_1(x_a, x_c)$ for all $x_a, x_c \in \R$. Thus the second bracketed piece is bounded by $\frac{d^2}{d^2 + w_n^2} K_1(x_a, x_c) \le K_1(x_a, x_c)$, while the first satisfies $\bigl|\frac{(f_a-f_c)^2(d^2-w_n^2)}{(d^2+w_n^2)^2}\bigr| \le \frac{(f_a-f_c)^2}{d^2+w_n^2} \le \frac{1}{2w_n} K_1(x_a, x_c)$. Hence the symmetrized self-energy kernel has magnitude at most $\frac{\beta^2}{2}(1 + \frac{1}{2w_n}) K_1(x_a, x_c)$. Multiplying by $\frac{4\tau}{V} \frac{U\Omega^2}{\tau^2 w_n^2}$ (noting $4\tau \cdot \frac{\beta^2}{2} = 2\beta$), dividing by $\frac{2\beta}{V} K_1$, and summing $\sum_{n\ge 1} \frac{1}{w_n^2}(1 + \frac{1}{2w_n}) = \frac{1}{24} + \frac{\zeta(3)}{16\pi^3}$ proves \eqref{eq:C1_pointwise_parts} and \eqref{eq:C1_pointwise}.
+\end{itemize}
+(iii) Applying Theorem~\ref{thm:S1} ($\E_0[(\chi_{b_0})_{zz}] \le U^{-1}$) directly gives \eqref{eq:C1_annealed}.
+\end{proof}
+
+\subsection{Three exact obstructions to a one-contraction closure}
+
+Although Theorem~\ref{thm:W2} eliminates $\tau^{-1}$ at first order and Theorem~\ref{thm:C1} closes the static-measure one-contraction expectation without logarithmic losses, closing a self-contained bound $S_\Omega \le 1 + \varepsilon(\Omega/\tau) S_\Omega$ for the interacting structure factor is blocked by three distinct obstructions.
+
+\begin{proposition}[Obstruction O1: Second-order non-Ward divergence]
+\label{prop:O1}
+Let $\Lambda = (\Z/L\Z)^2$ with $t > 0$, $\mu \in (-4t, 4t)$ inside the band, and $b_0 = 0$, where $h_0$ has smooth density of states $\rho(\varepsilon) = \rho(0) + o(1)$ near $\varepsilon = 0$ for $L \gg t/\tau$. For the first-derivative minor $F(b) = \partial_{\mathbf{1}} Q_b = -\beta f_\tau(h_b) q_\tau(h_b)$, Theorem~\ref{thm:W2} bounds $\frac{\tau}{V}\|\partial_{\mathbf{1}} Q_0\|_{\HS}^2 \le \frac{1}{8V}\mathbf{1}^T\chi_0\mathbf{1} \sim \frac{1}{4}\rho(0) = O(1)$, whereas the second derivative diverges as $\tau^{-2}$:
+\begin{align}
+\frac{\tau}{V}\bigl\|\partial_{\mathbf{1}}(\partial_{\mathbf{1}} Q_0)\bigr\|_{\HS}^2
+&= \frac{\tau}{V} \sum_{k} \bigl[\beta^2 f_\tau(\varepsilon_k) q_\tau(\varepsilon_k)(1 - 2f_\tau(\varepsilon_k))\bigr]^2 \nonumber\\
+&\xrightarrow{L\to\infty} \frac{1}{\tau^2}\int_{-\infty}^\infty \rho(\tau x) \left(\frac{e^x(e^x-1)}{(1+e^x)^3}\right)^2 dx
+\sim \frac{\rho(0)}{30\,\tau^2}.
+\label{eq:O1}
+\end{align}
+\end{proposition}
+
+\begin{proof}
+Differentiating $f_\tau(\varepsilon) q_\tau(\varepsilon)$ twice in $\mu$ and substituting $u = f_1(x)$ ($du = -u(1-u)\,dx$) yields $\int_{-\infty}^\infty [f_1(x)(1-f_1(x))(1-2f_1(x))]^2 dx = \int_0^1 u(1-u)(1-2u)^2\,du = \frac{1}{30}$.
+\end{proof}
+
+Numerically in the supplement, on a $24\times 24$ torus at $t=1.0, \mu=0.3$ as $\tau$ drops from $0.2$ to $0.025$, $\frac{\tau}{V}\|\partial_{\mathbf{1}}^2 Q_0\|_{\HS}^2$ rises from $0.199$ to $9.527$; furthermore, on a 3-site triangle ($t=1, \mu=1$, which has two degenerate zero modes at $b_0=0$) at $b_0 = \tau(0.8,-1.5,0.7)$ and $\Omega/\tau = 0.2$, $\tau|\partial_{b_{0,0}}\Delta S^{(1)}(b_0)|^2$ diverges as $\Theta(\tau^{-3})$. Notice the precise scope of Proposition~\ref{prop:O1}: it rules out uniform second-derivative and weighted-Fisher-norm closures (such as bounding $\tau\E_0|\partial_{b_0}\Delta S^{(1)}|^2$ pointwise or via \eqref{eq:W1}), rather than ruling out every possible cancellation-preserving interpolation.
+
+\begin{proposition}[Obstruction O2: Extensive coexistence covariance under $P_s$ reweighting]
+\label{prop:O2}
+Expanding the normalized dynamic expectation $S_s = \E_{P_s}[S_s(b_0)]$ around $s = 0$ via $P_s(db_0) \propto P_0(db_0) R_{b_0}(s)$, where $R'_{b_0}(0) = \sum_{z\in\Lambda} a_z(b_0)$ is the dynamic partition-ratio slope ($a_z(b_0) = O((U\Omega^2/\tau^2)(\chi_{b_0})_{zz})$), gives
+\begin{equation}
+\left.\frac{d S_s}{ds}\right|_{s=0} = \E_0\bigl[\Delta S^{(1)}(b_0)\bigr] + \Cov_0\!\left(S_0(b_0),\; R'_{b_0}(0)\right).
+\label{eq:O2_id}
+\end{equation}
+For any synthetic bimodal static distribution $p_0 = \frac{1}{2}\delta_{b^{(1)}} + \frac{1}{2}\delta_{b^{(2)}}$ (or a narrowly smoothed Gaussian mixture compatible with Theorem~\ref{thm:S1}) whose two phases differ in intensive static pair weight $S_0(b^{(1)}) - S_0(b^{(2)}) = \Delta s_0 \neq 0$ and in intensive dynamic slope $V^{-1}(R'_{b^{(1)}}(0) - R'_{b^{(2)}}(0)) = \delta\bar{a} \cdot (\Omega/\tau)^2 \neq 0$,
+\begin{equation}
+\Cov_0\!\left(S_0(b_0),\; R'_{b_0}(0)\right) = \frac{1}{4}\Delta s_0\,\delta\bar{a}\cdot V\left(\frac{\Omega}{\tau}\right)^2 = \Theta\!\left(V\left(\frac{\Omega}{\tau}\right)^2\right),
+\label{eq:O2_cov}
+\end{equation}
+diverging linearly with the volume $V$.
+\end{proposition}
+
+\begin{proof}
+Differentiating $S_s = \E_0[S_s(b_0) R_{b_0}(s)] / \E_0[R_{b_0}(s)]$ at $s=0$ with $R_{b_0}(0) = 1$ yields \eqref{eq:O2_id}, and evaluating the covariance on an equal-weight two-point distribution directly yields \eqref{eq:O2_cov}.
+\end{proof}
+
+Proposition~\ref{prop:O2} uses a synthetic bimodal ensemble rather than proving first-order phase coexistence in the actual Holstein static marginal $p_0(b_0)$, and an extensive absolute covariance does not establish the sign of $dS_s/ds|_{s=0}$; rather, it proves that Theorem~\ref{thm:S1} alone cannot rule out an extensive $\Theta(V(\Omega/\tau)^2)$ covariance term in $dS_s/ds|_{s=0}$.
+
+\begin{remark}[Obstruction O3 (conditional obstruction / open gap): Resummed $p_{\dyn}$ mismatch and $(t,U)$-blindness]
+\label{rem:O3}
+Unlike Proposition~\ref{prop:O1}, the two barriers below represent an open technical gap and a conditional obstruction rather than an unconditional proof of failure. If one avoids expanding $P_s$ and works directly under the resummed exact dynamic marginal $p_{\dyn}(b_0) = P_{s=1}(b_0)$ via Theorem~\ref{thm:S2}, two obstacles remain:
+\begin{enumerate}[label=(\arabic*),leftmargin=2.2em]
+\item \emph{Open gap:} Theorem~\ref{thm:S2} bounds $\E_{\dyn}[\chi_{b_0}^{\cond}] \preceq U^{-1} I$, not the bare static response $\E_{\dyn}[\chi_{b_0}]$ that appears on the right-hand side of Theorem~\ref{thm:W2} \eqref{eq:W2_pointwise} and Theorem~\ref{thm:C1} \eqref{eq:C1_pointwise}; closing without expanding $P_s$ requires bounding $\chi_{b_0}$ in terms of $\chi_{b_0}^{\cond}$, which is open when dynamic phonons alter the electronic spectrum.
+\item \emph{Conditional obstruction:} Even with $b_0 \equiv 0$ held fixed, the one-contraction bound \eqref{eq:C1_annealed} is $C_1^{\phys}(\Omega/\tau)^2$ with $C_1^{\phys} \approx 0.04651$ independent of $(t,U)$. Any $(t,U)$-independent global Gronwall closure $S_\Omega \le 1 + \varepsilon(\Omega/\tau) S_\Omega$ valid for all $\tau > 0$ would forbid divergent $S_\Omega$ at every temperature $T > 0$, which is conditional on (and contradicts) the expected, though unproved, existence of finite-$T_c$ pairing at intermediate or strong coupling. Any valid closure must therefore incorporate $(t,U)$-dependent multi-contraction physics.
+\end{enumerate}
+Only in the trivial ultra-dilute or filled-band regime $|\mu| > 4t + U + c\,\tau\log(1/\tau)$ where the Fock space is thermally empty or full up to $e^{-\beta\Delta_{\mathrm{band}}}$ is $S_\Omega \le 1 + O(e^{-\beta\Delta_{\mathrm{band}}})$ closed trivially.
+\end{remark}
+
+\section{Evaluation of metallic CDW domain walls near coexistence}
+\label{sec:domainwall}
+
+A natural candidate physical mechanism for evading Theorem~\ref{thm:S1} and Corollary~\ref{cor:S1a} is a two-dimensional square torus $(\Z/L\Z)^2$ ($V = L^2$) near charge-density-wave (CDW) coexistence, hosting metallic domain walls between antiphase gapped CDW domains ($b_{0,x} = 0$ on a strip of width $O(1)$ and length $L$, and $b_{0,x} = \pm \Delta_{\mathrm{CDW}} (-1)^{x_1+x_2}$ with $\Delta_{\mathrm{CDW}} \sim U$ in the two bulks). We evaluate both the static Fisher structure (numerically) and the dynamic pairing implications (heuristically):
+
+\begin{enumerate}[label=(\arabic*),leftmargin=2.2em]
+\item \emph{Why metallic domain walls evade Corollary~\ref{cor:S1a} without violating it.} The antiphase CDW bulk has gap $\Delta_{\mathrm{CDW}}$ and exponentially small near-Fermi weight, while the domain wall hosts $O(L)$ quasi-one-dimensional metallic states with local density of states $\rho_{\mathrm{wall}}(0) \sim 1/t$. Consequently, the volume-averaged near-Fermi fraction is $O(\tau/(Lt)) \ll \tau/U$ once $L \gtrsim U/t$. Even an array of walls at spacing $\xi_{\mathrm{wall}} \sim U/\tau$ saturates Corollary~\ref{cor:S1a}'s global bound $O(\tau/U)$ while keeping the local compressibility on each wall metallic. In a numerical $20\times 20$ torus check at $t=1.0, \Delta_{\mathrm{CDW}}=2.0, \tau=0.05$, the local diagonal compressibility on the wall is $8.68\times$ the bulk value, while the volume average is $0.1228 < U^{-1} = 0.5$.
+\item \emph{Why domain-wall coexistence defeats unresummed perturbation but likely does not falsify $\kB \Tpair \le C(t,U)\Omega$ (heuristic).} As demonstrated by Proposition~\ref{prop:O2}, macroscopic coexistence between metallic or wall configurations and gapped CDW bulk configurations immediately generates the $\Theta(V(\Omega/\tau)^2)$ extensive covariance in unresummed $P_s$-expansion perturbation theory. Physically, however, each isolated domain wall is a quasi-one-dimensional conductor; establishing true two-dimensional long-range pairing coherence at $T \gg \Omega$ requires transverse Josephson coupling between distinct walls across the CDW-gapped bulk, which is exponentially suppressed as $J_\perp \propto \exp(-\xi_{\mathrm{wall}}/\xi_{\mathrm{bulk}})$ when $\xi_{\mathrm{wall}} \sim U/\tau$ is large, whereas packing walls at spacing $O(1)$ forces $\tau \lesssim U$ and restores a conventional two-dimensional metal with weak-coupling Eliashberg scale $T_c \sim \Omega e^{-c/\lambda}$. This physical scaling picture is heuristic and unproved, but it explains why domain-wall coexistence obstructs the naive annealed expansion without providing a counterexample to a linear ceiling.
+\end{enumerate}
+
+\section{What is not claimed and open problems}
+\label{sec:limits}
+
+The results of this note are mathematical statements about model Hamiltonians, partition functions, and correlators. They are not experimental measurements, predictions for any material, or claims about a critical superconducting temperature. In particular:
+\begin{enumerate}[label=(\alph*),leftmargin=2.2em]
+\item No upper bound on $\Tpair$ for the spinful Holstein model is improved here, and the linear ceiling $\kB \Tpair \le C(t,U)\Omega$ remains open.
+\item Proposition~\ref{prop:O1} excludes uniform second-derivative and weighted-Fisher-norm closures, not every cancellation-preserving interpolation; Proposition~\ref{prop:O2} demonstrates an extensive coexistence covariance on a synthetic bimodal ensemble rather than proving phase coexistence in the true Holstein marginal $p_0(b_0)$.
+\item The finite-lattice, 16-dimensional Fock-space, and quadrature diagnostics in the supplement are numerical sanity checks only and do not substitute for the analytical proofs, which hold for every finite graph. The domain-wall physical coherence discussion in Section~\ref{sec:domainwall}(2) is heuristic.
+\end{enumerate}
+
+The main open technical step suggested by Theorems~\ref{thm:S2}, \ref{thm:W2}, and~\ref{thm:C1} is to replace global Taylor expansion of $\log Z_{\dyn}(b_0)$ by a local cluster or decoupling argument under $p_{\dyn}(b_0)$ (for example, conditioning on local block events where $S_0$ is separated from $1$ or directly comparing $\chi_{b_0}$ and $\chi_{b_0}^{\cond}$) so that extensive $R'_{b_0}(0)$ fluctuations never couple globally to $S_0$ across $V$ sites.
+
+\section*{Supporting material}
+
+The companion verification program \texttt{SUPPLEMENT/replay.py} has SHA-256 digest
+\begin{center}
+\footnotesize\texttt{572106bc3bd377ab5453e506696557220b5fcf1668c21927d8eb70146b304072}
+\end{center}
+\noindent as recorded in \texttt{SUPPLEMENT/MANIFEST.sha256}. It verifies two classes of checks and exits zero under both default execution and mutant-rejection mode (which corrupts 10 mathematical claims, signs, or scaling laws one at a time and asserts each fails with \texttt{AssertionError}):
+\begin{enumerate}[label=(\arabic*),leftmargin=2.2em]
+\item \emph{Certified arithmetic and outward-interval checks (within their finite scope):} exact rational checks of $2(n_\uparrow-\frac{1}{2})(n_\downarrow-\frac{1}{2}) = (n-1)^2 - \frac{1}{2}$ and $\int_0^1 u(1-u)(1-2u)^2\,du = \frac{1}{30}$, together with 40-digit \texttt{mpmath.iv} outward-interval enclosures for $C_{\vertop} = \zeta(3)/(16\pi^3) \in [0.0024230, 0.0024231]$, $C_{\SE} = \frac{1}{24} + \zeta(3)/(16\pi^3) \in [0.0440896, 0.0440898]$, $C_1^{\phys} \in [0.0465126, 0.0465128]$, and $|(1-f)(1-3f)| \le 1$ across 64 subintervals of $[0,1]$.
+\item \emph{Numerical finite-lattice sanity checks:} 2-site Kubo block-matrix verification of Theorem~\ref{thm:S2}, 2-site grand-canonical vs.\ canonical Theorem~\ref{thm:S1}, 3-site $U_0>0$ negative-trace witness, Theorem~\ref{thm:W2} across 50 random $L=6$ rings plus unnormalized $\tau^{-1}$ growth, Theorem~\ref{thm:C1} against direct Matsubara sums and 16-dimensional Fock-space time-ordered perturbation plus 100 random $L=6$ rings, $24\times 24$ and 3-site checks of Obstruction O1, $L=4\to 16$ scaling and 2-site identity checks of Obstruction O2, and the $20\times 20$ domain-wall check.
+\end{enumerate}
+
+\section*{Acknowledgments and disclosures}
+
+AI agents generated the proofs, code and drafts under D. Rens' direction, and separate AI agents carried out the independent reviews.
+
+This preprint has not been peer reviewed.
+
+\section*{Data availability}
+
+No external data set is used anywhere in this work. Every constant and finite-lattice diagnostic quoted in this preprint is reproduced by the standalone verification suite in \texttt{SUPPLEMENT/replay.py}, accompanied by \texttt{SUPPLEMENT/README.md} and \texttt{SUPPLEMENT/MANIFEST.sha256}.
+
+\bibliographystyle{plain}
+\bibliography{refs}
+\end{document}

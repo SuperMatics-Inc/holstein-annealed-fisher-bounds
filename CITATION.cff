@@ -1,0 +1,74 @@
+cff-version: 1.2.0
+message: Please cite the preprint and this replay supplement.
+title: 'Replay supplement for Annealed Fisher bounds, normalized-minor Ward identity, and obstructions to one-contraction pairing ceilings in the Holstein model'
+authors:
+  - family-names: Rens
+    given-names: Davis
+    affiliation: SuperMatics Inc.
+    orcid: 'https://orcid.org/0000-0001-5839-5197'
+doi: 10.5281/zenodo.24413072
+version: 1.0.0
+date-released: 2026-11-20
+license: Apache-2.0
+references:
+  - type: article
+    status: preprint
+    title: 'Annealed Fisher bounds, normalized-minor Ward identity, and obstructions to one-contraction pairing ceilings in the Holstein model'
+    authors:
+      - family-names: Rens
+        given-names: Davis
+        affiliation: SuperMatics Inc.
+        orcid: 'https://orcid.org/0000-0001-5839-5197'
+    year: 2026
+    doi: 10.5281/zenodo.24413070
+    license: CC-BY-4.0
+  - type: article
+    status: preprint
+    title: 'A two-thirds-power adiabatic bound for electronic pair order'
+    authors:
+      - family-names: Rens
+        given-names: Davis
+        affiliation: SuperMatics Inc.
+        orcid: 'https://orcid.org/0000-0001-5839-5197'
+    year: 2026
+    doi: 10.5281/zenodo.24372238
+  - type: article
+    status: preprint
+    title: 'Imaginary-time estimates and method barriers beyond the two-thirds adiabatic bound'
+    authors:
+      - family-names: Rens
+        given-names: Davis
+        affiliation: SuperMatics Inc.
+        orcid: 'https://orcid.org/0000-0001-5839-5197'
+    year: 2026
+    doi: 10.5281/zenodo.24374043
+  - type: article
+    status: preprint
+    title: 'Strong-coupling suppression of electronic pair order in the Holstein model, uniformly in phonon frequency and without a hopping cutoff'
+    authors:
+      - family-names: Rens
+        given-names: Davis
+        affiliation: SuperMatics Inc.
+        orcid: 'https://orcid.org/0000-0001-5839-5197'
+    year: 2026
+    doi: 10.5281/zenodo.24380128
+  - type: article
+    status: preprint
+    title: 'Determinant zeros and method-specific barriers to linear-in-frequency pairing bounds in the Holstein model'
+    authors:
+      - family-names: Rens
+        given-names: Davis
+        affiliation: SuperMatics Inc.
+        orcid: 'https://orcid.org/0000-0001-5839-5197'
+    year: 2026
+    doi: 10.5281/zenodo.24384373
+  - type: article
+    status: preprint
+    title: 'Method obstructions to linear-in-frequency pairing ceilings in electron-phonon models: integrated cumulants, positive determinants, and the vanishing effective attraction'
+    authors:
+      - family-names: Rens
+        given-names: Davis
+        affiliation: SuperMatics Inc.
+        orcid: 'https://orcid.org/0000-0001-5839-5197'
+    year: 2026
+    doi: 10.5281/zenodo.24408871

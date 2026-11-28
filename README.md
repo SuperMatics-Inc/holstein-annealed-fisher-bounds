@@ -1,4 +1,5 @@
 # Annealed Fisher bounds, normalized-minor Ward identity, and obstructions to one-contraction pairing ceilings in the Holstein model
+Research record: [Annealed Fisher bounds, normalized-minor Ward identity, and obstructions to one-contraction pairing ceilings in the Holstein model](https://supermatics.io/research/holstein-annealed-fisher-bounds).
 
 Davis Rens, SuperMatics Inc. ([ORCID 0000-0001-5839-5197](https://orcid.org/0000-0001-5839-5197)).
 Version 1.0.0.
